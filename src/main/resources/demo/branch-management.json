@@ -1,0 +1,69 @@
+{
+  "source": "Categories and services follow the capitecbank.co.za personal and business menus. Service durations, prerequisites, opening hours and pool sizes are assumptions for testing; the branch itself comes from appointments.branch.",
+  "categories": [
+    { "name": "Transact", "segment": "PERSONAL", "description": "Everyday banking: accounts, cards and the Capitec app", "services": [
+      { "name": "Open an account", "description": "Open a transactional account; bring your ID", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Proof of address not older than 3 months"], "minutes": 30 },
+      { "name": "Switch to Capitec", "description": "Move your salary and debit orders to Capitec", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your old bank's account number", "Your employer's details for the salary switch"], "minutes": 30 },
+      { "name": "Card replacement", "description": "Replace a lost, stolen or damaged bank card", "prerequisites": ["Your green barcoded ID book or Smart ID card", "A case number if the card was stolen"], "minutes": 15 },
+      { "name": "Capitec app help", "description": "Get the app set up or solve an app problem", "prerequisites": ["Your phone with the Capitec app installed", "Your card and its PIN"], "minutes": 15 },
+      { "name": "Stokvel account", "description": "Open and manage a stokvel account", "prerequisites": ["ID documents of the signatories", "The stokvel's constitution or minutes naming the signatories"], "minutes": 30 }
+    ] },
+    { "name": "Save", "segment": "PERSONAL", "description": "Savings and investments", "services": [
+      { "name": "Access Anytime savings", "description": "Open a savings plan you can access any time", "minutes": 15 },
+      { "name": "Fixed-term savings", "description": "Lock in a fixed interest rate for a fixed term", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your Capitec account for the deposit"], "minutes": 30 },
+      { "name": "Notice deposit", "description": "Earn more interest with a notice period", "minutes": 30 },
+      { "name": "Tax-free savings", "description": "Save tax-free within the annual limit", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your income tax number, if you have one"], "minutes": 30 },
+      { "name": "Invest with EasyEquities", "description": "Start investing through EasyEquities", "minutes": 30 }
+    ] },
+    { "name": "Insure", "segment": "PERSONAL", "description": "Funeral and life cover", "services": [
+      { "name": "Funeral cover", "description": "Take out or change funeral cover", "prerequisites": ["Your green barcoded ID book or Smart ID card", "ID numbers of the family members to cover"], "minutes": 30 },
+      { "name": "Life cover", "description": "Take out or change life cover", "minutes": 30 },
+      { "name": "Burial repatriation", "description": "Add burial repatriation to your cover", "minutes": 30 },
+      { "name": "Insurance claim", "description": "Submit a funeral or life cover claim", "prerequisites": ["Your green barcoded ID book or Smart ID card", "The certified death certificate", "The deceased's ID document", "Bank details of the person claiming"], "minutes": 45 }
+    ] },
+    { "name": "Credit", "segment": "PERSONAL", "description": "Loans, credit card and access facility", "services": [
+      { "name": "Personal loan", "description": "Apply for a personal loan", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your 3 latest payslips", "Bank statements of the last 3 months"], "minutes": 45 },
+      { "name": "Access facility", "description": "Apply for a revolving access facility", "minutes": 30 },
+      { "name": "Credit card", "description": "Apply for a credit card", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your latest payslip"], "minutes": 30 },
+      { "name": "Home loan", "description": "Discuss and apply for a home loan", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your 3 latest payslips", "Bank statements of the last 3 months", "The offer to purchase, if you have one"], "minutes": 60, "leadTimeMinutes": 120, "maxAdvanceDays": 60 },
+      { "name": "Vehicle loan", "description": "Finance a new or used vehicle", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Your driver's licence", "Your 3 latest payslips", "The vehicle's details or quote"], "minutes": 45 },
+      { "name": "Home improvement loan", "description": "Credit to build or renovate", "minutes": 45 },
+      { "name": "Education loan", "description": "Credit for study costs", "minutes": 45 },
+      { "name": "Medical loan", "description": "Credit for medical costs", "minutes": 45 }
+    ] },
+    { "name": "Connect", "segment": "PERSONAL", "description": "Capitec Connect mobile network", "services": [
+      { "name": "Connect SIM", "description": "Get and activate a Capitec Connect SIM", "prerequisites": ["Your green barcoded ID book or Smart ID card", "Proof of address for RICA"], "minutes": 15 },
+      { "name": "Connect devices", "description": "Buy a phone or device on Capitec Connect", "minutes": 30 }
+    ] },
+    { "name": "Home Affairs", "segment": "PERSONAL", "description": "Smart ID and passport applications at Smart ID branches", "smartIdOnly": true, "services": [
+      { "name": "Smart ID card application", "description": "Apply for a Smart ID card; book in advance", "prerequisites": ["Your green barcoded ID book or birth certificate", "The application fee (free for a first ID at 16)"], "minutes": 30, "leadTimeMinutes": 1440, "maxAdvanceDays": 30 },
+      { "name": "Passport application", "description": "Apply for a South African passport", "prerequisites": ["Your green barcoded ID book or Smart ID card", "The application fee", "Parents' IDs and unabridged birth certificate for children under 16"], "minutes": 30, "leadTimeMinutes": 1440, "maxAdvanceDays": 30 }
+    ] },
+    { "name": "Transact", "segment": "BUSINESS", "description": "Business accounts and payments", "services": [
+      { "name": "Open a business account", "description": "Open an account for a sole proprietor, company or trust", "prerequisites": ["IDs of all directors or members", "Company registration documents (CIPC)", "Proof of business address", "Your business's tax number"], "minutes": 60 },
+      { "name": "Cash deposit solutions", "description": "Set up cash deposits and collection for your business", "minutes": 30 },
+      { "name": "Payment services", "description": "Bulk payments, salaries and collections", "minutes": 30 },
+      { "name": "Forex", "description": "International payments and foreign exchange", "minutes": 30 },
+      { "name": "Franchising", "description": "Banking for franchise owners", "minutes": 45 },
+      { "name": "Card machines", "description": "Get a card machine for your business", "prerequisites": ["IDs of the directors", "Company registration documents (CIPC)", "Your business bank account details"], "minutes": 30 }
+    ] },
+    { "name": "Save", "segment": "BUSINESS", "description": "Business savings and trust accounts", "services": [
+      { "name": "Business flexible savings", "description": "Flexible savings for your business", "minutes": 30 },
+      { "name": "Business notice account", "description": "Earn more interest with a notice period", "minutes": 30 },
+      { "name": "Regulated trust account", "description": "Trust account for regulated professions", "minutes": 45 },
+      { "name": "Third party money management", "description": "Manage money held on behalf of others", "minutes": 45 }
+    ] },
+    { "name": "Insure", "segment": "BUSINESS", "description": "Business insurance", "services": [
+      { "name": "Business insurance", "description": "Cover for your business assets and liability", "minutes": 45 }
+    ] },
+    { "name": "Credit", "segment": "BUSINESS", "description": "Business lending and finance", "services": [
+      { "name": "Business overdraft", "description": "Apply for an overdraft facility", "prerequisites": ["Financial statements of the last 2 years", "Bank statements of the last 6 months"], "minutes": 45 },
+      { "name": "Vehicle and asset finance", "description": "Finance vehicles and equipment", "prerequisites": ["Financial statements of the last 2 years", "The quote or invoice for the asset"], "minutes": 60 },
+      { "name": "Rental finance", "description": "Rent equipment with an option to upgrade", "minutes": 45 },
+      { "name": "Property finance", "description": "Finance commercial property", "minutes": 60, "leadTimeMinutes": 120, "maxAdvanceDays": 60 },
+      { "name": "Business term loan", "description": "A term loan for growth or working capital", "minutes": 60 },
+      { "name": "Simply Sell", "description": "Get paid sooner by selling your invoices", "minutes": 30 }
+    ] }
+  ],
+  "branch": { "smartId": true, "weekdays": { "opens": "09:00", "closes": "17:00" }, "saturday": { "opens": "08:00", "closes": "13:00" }, "consultants": 4, "businessBankers": 2 }
+}

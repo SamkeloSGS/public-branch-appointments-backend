@@ -1,0 +1,7 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+# Secrets rendered from the local Vault by vault/init.sh
+.secrets/

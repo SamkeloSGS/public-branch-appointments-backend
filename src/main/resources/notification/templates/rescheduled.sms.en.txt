@@ -1,0 +1,1 @@
+Moved: {service} at {branch} is now {shortDate} at {time}. Ref {reference}. Manage: {link}

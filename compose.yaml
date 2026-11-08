@@ -1,0 +1,173 @@
+# Local dependencies for running the application:
+#   docker compose up -d
+#   mvn spring-boot:run
+#
+# - PostgreSQL on host port 5433 (5432 is often taken by a local PostgreSQL install). Flyway creates the schemas
+#   and tables on application startup.
+# - Keycloak on http://localhost:8180 with the appointments realm imported from keycloak/ (realm as code) and the
+#   local test users from keycloak/local/. Admin console: http://localhost:8180/admin (admin / admin, local only).
+# - Redis on port 6379 caches the public reads (branch, services, categories). A cache only: safe to flush.
+# - Mailpit on http://localhost:8025 catches Keycloak's verification and password-reset emails.
+# - Vault (dev mode) on http://localhost:8200 (token local-dev-root-token) holds the secrets. vault-init seeds them on
+#   every start and renders them into .secrets/ (git-ignored) for Keycloak (.secrets/keycloak/keycloak.env) and
+#   postgres-exporter. The backend reads its secrets from Vault itself (Spring Cloud Vault). See vault/init.sh.
+# - Monitoring (grafana/otel-lgtm: OpenTelemetry collector, Prometheus, Tempo, Loki, Grafana) on http://localhost:3000.
+#   The backend sends metrics, traces and logs to the collector on 4318 (OTLP over HTTP). The collector also scrapes
+#   Keycloak (port 9000) and postgres-exporter. Dashboards and alerts are provisioned from monitoring/; alert emails
+#   go to Mailpit.
+services:
+  postgres:
+    image: postgres:17
+    container_name: appointments-postgres
+    environment:
+      POSTGRES_DB: appointments
+      POSTGRES_USER: appointments       # must match database-username in vault/init.sh
+      POSTGRES_PASSWORD: appointments
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appointments -d appointments"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    container_name: appointments-redis
+    # A cache only: nothing is written to disk, and entries that would not fit are dropped, least recently used first
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  vault:
+    image: hashicorp/vault:1.20.4
+    container_name: appointments-vault
+    command: ["server", "-dev"]
+    environment:
+      # Dev mode: in memory, already unsealed, fixed root token. Local only, never for real secrets.
+      VAULT_DEV_ROOT_TOKEN_ID: local-dev-root-token
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status", "-address=http://127.0.0.1:8200"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
+  vault-init:
+    image: hashicorp/vault:1.20.4
+    container_name: appointments-vault-init
+    entrypoint: ["/bin/sh", "/vault-init/init.sh"]
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: local-dev-root-token
+    volumes:
+      - ./vault/init.sh:/vault-init/init.sh:ro
+      - ./.secrets:/out
+    depends_on:
+      vault:
+        condition: service_healthy
+    restart: "no"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    container_name: appointments-keycloak
+    # Secrets (admin login, SMTP login, backend client secret) come from Vault through the rendered env file
+    entrypoint: ["/bin/bash", "-c", ". /run/secrets/appointments/keycloak.env && exec /opt/keycloak/bin/kc.sh start-dev --import-realm"]
+    environment:
+      KC_HOSTNAME: http://localhost:8180
+      KC_HEALTH_ENABLED: "true"
+      # Prometheus metrics on the management port (9000, /metrics), including sign-in and OTP outcomes
+      KC_METRICS_ENABLED: "true"
+      KC_EVENT_METRICS_USER_ENABLED: "true"
+      # Values for the placeholders in keycloak/realm-appointments.json; staging and production set their own
+      KC_REALM_SSL_REQUIRED: external
+      KC_SMTP_HOST: mailpit
+      KC_SMTP_PORT: "1025"
+      KC_SMTP_FROM: no-reply@appointments.test
+      KC_SMTP_AUTH: "false"
+      KC_SMTP_STARTTLS: "false"
+      KC_WEB_REDIRECT_URI: http://localhost:4200/*
+      KC_WEB_ORIGIN: http://localhost:4200
+      KC_SWAGGER_REDIRECT_URI: http://localhost:8081/swagger-ui/oauth2-redirect.html
+      KC_SWAGGER_ORIGIN: http://localhost:8081
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/appointments-realm.json:/opt/keycloak/data/import/appointments-realm.json:ro
+      - ./keycloak/local/appointments-users-0.json:/opt/keycloak/data/import/appointments-users-0.json:ro
+      - keycloak-data:/opt/keycloak/data
+      - ./.secrets/keycloak:/run/secrets/appointments:ro
+    depends_on:
+      mailpit:
+        condition: service_started
+      vault-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.29
+    container_name: appointments-mailpit
+    ports:
+      - "8025:8025"   # web UI
+      - "1025:1025"   # SMTP, used by the backend's notification emails
+    restart: unless-stopped
+
+  monitoring:
+    image: grafana/otel-lgtm:0.37.0
+    container_name: appointments-monitoring
+    environment:
+      # Adds the Keycloak and PostgreSQL scrape jobs to the image's collector configuration
+      OTELCOL_EXTRA_ARGS: --config=file:/otel-lgtm/appointments/otelcol-appointments.yaml
+      # Local only: anonymous admin access, alert emails to Mailpit
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: mailpit:1025
+      GF_SMTP_FROM_ADDRESS: grafana@appointments.test
+    ports:
+      - "3000:3000"   # Grafana
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP, used by the backend
+    volumes:
+      - ./monitoring/otelcol-appointments.yaml:/otel-lgtm/appointments/otelcol-appointments.yaml:ro
+      - ./monitoring/dashboards:/otel-lgtm/appointments/dashboards:ro
+      - ./monitoring/provisioning/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/appointments.yaml:ro
+      - ./monitoring/provisioning/alerting.yaml:/otel-lgtm/grafana/conf/provisioning/alerting/appointments.yaml:ro
+      - monitoring-data:/data
+    depends_on:
+      mailpit:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    container_name: appointments-postgres-exporter
+    environment:
+      DATA_SOURCE_URI: postgres:5432/appointments?sslmode=disable
+      DATA_SOURCE_USER_FILE: /run/secrets/appointments/postgres-username
+      DATA_SOURCE_PASS_FILE: /run/secrets/appointments/postgres-password
+    volumes:
+      - ./.secrets/monitoring:/run/secrets/appointments:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  keycloak-data:
+  monitoring-data:

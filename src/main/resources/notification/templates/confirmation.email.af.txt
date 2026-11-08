@@ -1,0 +1,13 @@
+Subject: Afspraak bevestig: {service} op {shortDate}
+
+Hallo {customerName},
+
+Jou afspraak is bevestig.
+
+Diens: {service}
+Tak: {branch}, {branchAddress}
+Datum: {date}
+Tyd: {time}
+Verwysing: {reference}
+
+Om dit te verander of te kanselleer, gaan na {link}

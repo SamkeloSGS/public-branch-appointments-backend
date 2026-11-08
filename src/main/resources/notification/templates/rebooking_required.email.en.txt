@@ -1,0 +1,12 @@
+Subject: Please choose a new time for your appointment
+
+Hello {customerName},
+
+We are sorry: {branch} can no longer see you at the time you booked.
+
+Service: {service}
+Date: {date}
+Time: {time}
+Reference: {reference}
+
+Please choose a new time at {link}

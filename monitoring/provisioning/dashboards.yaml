@@ -1,0 +1,10 @@
+# Grafana loads every dashboard JSON in monitoring/dashboards (mounted at /otel-lgtm/appointments/dashboards)
+apiVersion: 1
+
+providers:
+  - name: appointments
+    folder: Appointments
+    type: file
+    allowUiUpdates: false
+    options:
+      path: /otel-lgtm/appointments/dashboards

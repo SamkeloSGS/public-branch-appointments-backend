@@ -1,0 +1,1 @@
+Reminder: {service} at {branch} on {shortDate} at {time}. Ref {reference}. Manage: {link}

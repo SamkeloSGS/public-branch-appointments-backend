@@ -1,0 +1,37 @@
+# Local development (mvn spring-boot:run, and the Fullstack compose): the services in compose.yaml and the frontend's
+# dev server, the demo data (DemoDataLoader, DemoCustomerLoader), and every request traced. The keys are the
+# environment variables application.yml reads, so a real environment variable of the same name still wins.
+
+# Vault's address and token are in application.yml's local section: Vault is read before this file.
+
+DATABASE_URL: jdbc:postgresql://localhost:5433/appointments
+REDIS_HOST: localhost
+REDIS_SSL: false
+# Mailpit (web UI on port 8025): no TLS, no login
+SMTP_HOST: localhost
+SMTP_PORT: 1025
+SMTP_STARTTLS: false
+
+JWT_ISSUER_URI: http://localhost:8180/realms/appointments
+FIRST_ADMIN_EMAIL: manager@appointments.test
+FRONTEND_URL: http://localhost:4200
+NOTIFICATION_EMAIL_FROM: appointments@appointments.test
+
+BRANCH_CODE: SANDTON
+BRANCH_NAME: Sandton City
+BRANCH_STREET: Sandton City, cnr Rivonia Road and 5th Street
+BRANCH_CITY: Sandton
+BRANCH_PROVINCE: Gauteng
+BRANCH_POSTAL_CODE: "2196"
+BRANCH_LATITUDE: -26.1076
+BRANCH_LONGITUDE: 28.0567
+
+OTLP_ENDPOINT: http://localhost:4318
+DEPLOYMENT_ENVIRONMENT: local
+TRACING_SAMPLING_PROBABILITY: 1.0
+API_DOCS_ENABLED: true
+
+appointments:
+  notification:
+    webhook-secrets:
+      local: ${webhook-secret-local}  # Vault: appointments/backend; the logging stand-in "provider"

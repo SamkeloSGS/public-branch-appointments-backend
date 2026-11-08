@@ -1,0 +1,13 @@
+Subject: Reminder: {service} on {shortDate} at {time}
+
+Hello {customerName},
+
+This is a reminder of your appointment.
+
+Service: {service}
+Branch: {branch}, {branchAddress}
+Date: {date}
+Time: {time}
+Reference: {reference}
+
+To change or cancel it, go to {link}

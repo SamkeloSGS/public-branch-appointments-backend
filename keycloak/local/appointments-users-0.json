@@ -1,0 +1,32 @@
+{
+  "realm": "appointments",
+  "users": [
+    {
+      "username": "manager@appointments.test",
+      "email": "manager@appointments.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Branch",
+      "lastName": "Manager",
+      "credentials": [{ "type": "password", "value": "Local-dev-password-1", "temporary": false }]
+    },
+    {
+      "username": "staff@appointments.test",
+      "email": "staff@appointments.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Branch",
+      "lastName": "Staff",
+      "credentials": [{ "type": "password", "value": "Local-dev-password-1", "temporary": false }]
+    },
+    {
+      "username": "customer@appointments.test",
+      "email": "customer@appointments.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Customer",
+      "credentials": [{ "type": "password", "value": "Local-dev-password-1", "temporary": false }]
+    }
+  ]
+}

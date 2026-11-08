@@ -1,0 +1,14 @@
+{
+  "customers": [
+    { "givenName": "Thandi", "familyName": "Customer", "email": "customer@appointments.test", "phone": "082 555 0101", "language": "en" },
+    { "givenName": "Sipho", "familyName": "Dlamini", "email": "sipho.dlamini@customers.test", "phone": "+27 83 555 0102", "language": "zu" },
+    { "givenName": "Annelie", "familyName": "van der Merwe", "email": "annelie.vdm@customers.test", "phone": "072 555 0103", "language": "af" },
+    { "givenName": "Lwazi", "familyName": "Nkosi", "email": "lwazi.nkosi@customers.test", "phone": null, "language": "xh" },
+    { "givenName": "Palesa", "familyName": "Mokoena", "email": "palesa.mokoena@customers.test", "phone": "061 555 0105", "language": "st" },
+    { "givenName": "Johan", "familyName": "Botha", "email": "johan.botha@customers.test", "phone": "082 555 0106", "language": "af" },
+    { "givenName": "Ayesha", "familyName": "Patel", "email": "ayesha.patel@customers.test", "phone": "084 555 0107", "language": "en" },
+    { "givenName": "Bongani", "familyName": "Zulu", "email": "bongani.zulu@customers.test", "phone": "073 555 0108", "language": "zu" },
+    { "givenName": "Nomvula", "familyName": "Dlamini", "email": "nomvula.dlamini@customers.test", "phone": "082 555 0108", "language": "en" },
+    { "givenName": "Pieter", "familyName": "Smit", "email": "pieter.smit@customers.test", "phone": "021 555 0110", "language": "af" }
+  ]
+}

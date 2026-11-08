@@ -1,0 +1,13 @@
+Subject: Herinnering: {service} op {shortDate} om {time}
+
+Hallo {customerName},
+
+Dit is 'n herinnering aan jou afspraak.
+
+Diens: {service}
+Tak: {branch}, {branchAddress}
+Datum: {date}
+Tyd: {time}
+Verwysing: {reference}
+
+Om dit te verander of te kanselleer, gaan na {link}

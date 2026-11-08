@@ -1,0 +1,251 @@
+# Production settings. Everything that differs between environments is an environment variable; a placeholder with no
+# default (such as ${DATABASE_URL}) must be set, and the application does not start while one is missing
+# (RequiredSettings). The local profile (application-local.yml) gives those variables local values.
+spring:
+  application:
+    name: appointments
+  config:
+    # Every secret comes from Vault at start-up (Spring Cloud Vault): each key of these KV secrets becomes a property,
+    # used by the placeholders below. Required: without Vault the app does not start. Tests supply their own values.
+    import:
+      - vault://secret/appointments/backend
+      - vault://secret/appointments/shared
+  cloud:
+    # Spring Cloud is here for Vault only; no service discovery (and no UNKNOWN discovery health check)
+    discovery:
+      enabled: false
+    vault:
+      uri: ${VAULT_URI}
+      # AppRole sign-in; the local profile uses the dev-mode root token (VAULT_AUTHENTICATION=TOKEN)
+      authentication: ${VAULT_AUTHENTICATION:APPROLE}
+      app-role:
+        role-id: ${VAULT_ROLE_ID:}
+        secret-id: ${VAULT_SECRET_ID:}
+      token: ${VAULT_TOKEN:}
+      fail-fast: true
+      kv:
+        # Only the secrets imported above; not the default application-name paths
+        enabled: false
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${database-username}           # Vault: appointments/backend
+    password: ${database-password}
+  jpa:
+    open-in-view: false
+    properties:
+      # Collections of several loaded entities (a range of pool days' segments and reservations) load in one query
+      # each instead of one per entity
+      hibernate.default_batch_fetch_size: 50
+    hibernate:
+      # Schema is owned by Flyway; Hibernate only checks that the mapping matches it.
+      ddl-auto: validate
+  flyway:
+    # Each module runs its own Flyway instance against its own schema and history table
+    # (see SharedPersistenceConfiguration and the modules' *FlywayConfiguration classes).
+    enabled: false
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
+      # A listener that started (or was queued) this long ago without finishing is marked FAILED, so it is retried
+      # by EventPublicationMaintenance like any other failure (for example after the instance running it died)
+      staleness:
+        published: PT10M          # 10 minutes
+        processing: PT10M
+        resubmitted: PT10M
+        check-interval: PT1M
+  data:
+    redis:
+      # Short timeouts: a slow or missing Redis must not hold up requests, which then read the database
+      # (CacheConfiguration).
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${redis-password}           # Vault: appointments/backend (empty locally)
+      ssl:
+        enabled: ${REDIS_SSL:true}
+      timeout: 500ms
+      connect-timeout: 1s
+      repositories:
+        enabled: false              # Redis is a cache here; every repository is JPA
+  cache:
+    type: redis
+    redis:
+      # Caches are emptied when their data changes; the time to live is a safety net for a missed eviction
+      time-to-live: PT10M           # 10 minutes
+      key-prefix: "appointments:"
+      enable-statistics: true       # cache hits and misses as metrics
+  mail:
+    # A provider's SMTP endpoint such as Amazon SES, over STARTTLS; Mailpit locally
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${smtp-username}              # Vault: appointments/backend (empty for Mailpit)
+    password: ${smtp-password}
+    properties:
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      mail.smtp.starttls.required: ${SMTP_STARTTLS:true}
+  mvc:
+    problemdetails:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Keycloak realm as the browser sees it: the iss of every token. Keys are fetched lazily from
+          # <appointments.identity.keycloak-url>/protocol/openid-connect/certs unless jwk-set-uri is set, and
+          # re-fetched when a token names an unknown key.
+          issuer-uri: ${JWT_ISSUER_URI}
+          audiences: appointments-api
+
+appointments:
+  # The one branch this application runs for (BranchProfile). Not stored in the database: each deployment sets its
+  # own. Opening hours, pools, services and the calendar are managed in the app by the branch manager.
+  branch:
+    code: ${BRANCH_CODE}
+    name: ${BRANCH_NAME}
+    address:
+      street: ${BRANCH_STREET}
+      city: ${BRANCH_CITY}
+      province: ${BRANCH_PROVINCE}
+      postal-code: ${BRANCH_POSTAL_CODE}
+    location:
+      latitude: ${BRANCH_LATITUDE}
+      longitude: ${BRANCH_LONGITUDE}
+    time-zone: ${BRANCH_TIME_ZONE:Africa/Johannesburg}
+    segments: ${BRANCH_SEGMENTS:PERSONAL,BUSINESS}   # customers served: PERSONAL, BUSINESS or both
+  events:
+    # Outbox maintenance (EventPublicationMaintenance): failed listeners are retried, completed rows are deleted
+    retry-interval: PT5M          # 5 minutes: how often FAILED publications are resubmitted
+    max-attempts: 12              # then the publication stays FAILED for a person to look at (about an hour)
+    retention: P7D                # 7 days: completed publications are kept this long, for investigating
+  identity:
+    # The realm address the backend itself calls: Keycloak's keys, its health check and the admin API. The issuer by
+    # default; differs where the backend reaches Keycloak by another name than the browser does (compose.yaml's
+    # backend service). Tokens are always checked against the issuer.
+    keycloak-url: ${KEYCLOAK_URL:${spring.security.oauth2.resourceserver.jwt.issuer-uri}}
+    # Invited as branch manager at start-up when no branch manager exists (IA-12); only needed until then
+    first-admin-email: ${FIRST_ADMIN_EMAIL:}
+    # Returned with invitations (v1); the frontend no longer shows it. The frontend's /sign-up page starts Keycloak's
+    # registration with PKCE, which the realm requires (a direct Keycloak registration link is refused).
+    sign-up-url: ${SIGN_UP_URL:${FRONTEND_URL}/sign-up}
+    # Requests per minute per caller (RequestRateLimiter): the signed-in user, otherwise the client address. Behind a
+    # proxy set server.forward-headers-strategy, or every customer shares the proxy's address.
+    rate-limits:
+      enabled: ${RATE_LIMITS_ENABLED:true}
+      anonymous-per-minute: 120   # requests without a token, per address
+      user-per-minute: 300        # per signed-in user
+      changes-per-minute: 10      # booking, rescheduling and cancelling, on top of the limit above
+      change-paths: /api/v1/appointments/**
+    # The appointments-backend service account (keycloak/appointments-realm.json): creates and emails the logins of
+    # invited staff, and deletes the login of an erased customer. Its secret is shared with Keycloak through Vault
+    # (appointments/shared).
+    keycloak-admin:
+      enabled: ${KEYCLOAK_ADMIN_ENABLED:true}
+      client-id: appointments-backend
+      client-secret: ${backend-client-secret}  # Vault: appointments/shared
+      # Where the staff setup email's link returns once the person is ready (a redirect URI of appointments-web)
+      setup-client-id: appointments-web
+      setup-redirect-url: ${STAFF_SETUP_REDIRECT_URL:${FRONTEND_URL}/admin}
+  customer:
+    # Supported contact languages; the first is the default
+    languages: en, af, zu, xh, st
+    # Added to local phone numbers that start with 0 (082 123 4567 -> +27821234567)
+    default-country-code: "27"
+  booking:
+    # Placeholders for the business to confirm.
+    # Durations are ISO-8601: P = period, T = start of the time part, then H hours, M minutes, D days.
+    cancel-cutoff: PT60M          # 60 minutes (1 hour): customers may cancel or reschedule until this long before the start
+    no-show-grace: PT15M          # 15 minutes: a no-show can be recorded this long after the start
+    max-future-appointments: 3    # future BOOKED appointments a customer may hold when booking themselves
+    max-availability-days: 31     # days per availability request
+    idempotency-retention: PT24H  # 24 hours (1 day): how long Idempotency-Key values are remembered
+    sweep-interval: PT5M          # 5 minutes: how often the no-show sweep and rebooking expiry run
+  notification:
+    reminder-lead-time: PT24H     # 24 hours (1 day): the reminder goes out this long before the start
+    dispatcher-interval: PT1M     # 1 minute: how often due notifications are sent
+    batch-size: 100
+    max-attempts: 5
+    retry-delays: PT1M, PT5M, PT15M, PT1H  # 1 minute, 5 minutes, 15 minutes, 1 hour: waits between delivery attempts
+    retention: P365D              # 365 days (about 12 months): notifications older than this are deleted
+    manage-url: ${MANAGE_URL:${FRONTEND_URL}/appointments/{reference}}
+    default-language: en
+    email-from: ${NOTIFICATION_EMAIL_FROM}
+    # Shared secrets that sign provider delivery callbacks, per provider name (POST /api/v1/webhooks/notifications/{name}),
+    # each from Vault. None until an SMS or email provider is chosen; the local profile has the "local" stand-in's.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Health and info only; metrics, traces and logs are pushed over OTLP, never read through HTTP
+        include: health, info
+  endpoint:
+    health:
+      probes:
+        enabled: true             # /actuator/health/liveness and /actuator/health/readiness
+      show-components: always     # component names and status (db, mail, keycloak), never details
+      show-details: never
+  opentelemetry:
+    resource-attributes:
+      deployment.environment.name: ${DEPLOYMENT_ENVIRONMENT:production}
+    # OpenTelemetry collector; the Grafana stack in compose.yaml locally
+    tracing.export.otlp.endpoint: ${OTLP_ENDPOINT}/v1/traces
+    logging.export.otlp.endpoint: ${OTLP_ENDPOINT}/v1/logs
+  otlp:
+    metrics:
+      export:
+        url: ${OTLP_ENDPOINT}/v1/metrics
+        step: PT15S               # 15 seconds: how often metrics are pushed
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.1}  # one request in ten; every request locally
+
+# SQL statements as spans in traces (datasource-micrometer). Statement text only, with literals replaced by "?":
+# parameter values could hold personal data and are never recorded.
+jdbc:
+  includes: query                   # one span per statement; no connection or result-set spans
+  datasource-proxy:
+    include-parameter-values: false
+  opentelemetry:
+    analysis:
+      sanitize:
+        enabled: true
+
+springdoc:
+  # Off in production; the local profile turns the OpenAPI description and Swagger UI on
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
+  swagger-ui:
+    # Show the admin and public groups; keep the bearer token between page reloads while developing.
+    urls-primary-name: admin
+    persist-authorization: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+    oauth:
+      # Sign in through Keycloak with the public appointments-web client, PKCE, and a second factor (admin endpoints
+      # need acr 2). Swagger is a developer tool, so it always asks for level 2.
+      client-id: appointments-web
+      use-pkce-with-authorization-code-grant: true
+      scopes: openid
+      additional-query-string-params:
+        acr_values: "2"
+
+logging:
+  level:
+    # The staleness check logs "No stale publications" three times a minute at INFO. Failed and stuck publications
+    # show in the outbox gauges, panels and alert instead.
+    org.springframework.modulith.events.core.DefaultEventPublicationRegistry: WARN
+
+server:
+  port: 8081
+  # Client addresses (rate limits) from X-Forwarded-For, trusted only from private-network proxies
+  forward-headers-strategy: native
+
+---
+# The local profile's Vault connection. Here rather than in application-local.yml because Spring reads Vault (the
+# import above) before it loads the profile files.
+spring:
+  config:
+    activate:
+      on-profile: local
+VAULT_URI: http://localhost:8200
+VAULT_AUTHENTICATION: TOKEN
+VAULT_TOKEN: local-dev-root-token          # the dev-mode root token in compose.yaml

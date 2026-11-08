@@ -1,0 +1,13 @@
+Subject: Afspraak geskuif: {service} op {shortDate} om {time}
+
+Hallo {customerName},
+
+Jou afspraak het 'n nuwe tyd.
+
+Diens: {service}
+Tak: {branch}, {branchAddress}
+Datum: {date}
+Tyd: {time}
+Verwysing: {reference}
+
+Om dit te verander of te kanselleer, gaan na {link}

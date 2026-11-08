@@ -1,0 +1,1 @@
+Kubhukiwe: {service} e-{branch} mhla {shortDate} ngo-{time}. Ref {reference}. Lawula: {link}

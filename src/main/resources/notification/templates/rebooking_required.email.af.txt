@@ -1,0 +1,12 @@
+Subject: Kies asseblief 'n nuwe tyd vir jou afspraak
+
+Hallo {customerName},
+
+Ons is jammer: {branch} kan jou nie meer op die bespreekte tyd help nie.
+
+Diens: {service}
+Datum: {date}
+Tyd: {time}
+Verwysing: {reference}
+
+Kies asseblief 'n nuwe tyd by {link}

@@ -1,0 +1,4 @@
+# The image is built from the pom and the main sources only (see Dockerfile); never send .secrets/, target/ or .git/
+*
+!pom.xml
+!src/main/

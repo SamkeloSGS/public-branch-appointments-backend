@@ -1,0 +1,12 @@
+Subject: Sicela ukhethe isikhathi esisha
+
+Sawubona {customerName},
+
+Siyaxolisa: i-{branch} ayisakwazi ukukusiza ngesikhathi osibhukile.
+
+Isevisi: {service}
+Usuku: {date}
+Isikhathi: {time}
+Inkomba: {reference}
+
+Sicela ukhethe isikhathi esisha ku-{link}

@@ -1,0 +1,13 @@
+Subject: Isikhathi sikhanseliwe: {service} mhla {shortDate}
+
+Sawubona {customerName},
+
+Isikhathi sakho osibhukile sikhanseliwe.
+
+Isevisi: {service}
+Igatsha: {branch}, {branchAddress}
+Usuku: {date}
+Isikhathi: {time}
+Inkomba: {reference}
+
+Ukuze ubhukhe esinye isikhathi, vakashela {link}

@@ -1,0 +1,13 @@
+Subject: Appointment cancelled: {service} on {shortDate}
+
+Hello {customerName},
+
+Your appointment has been cancelled.
+
+Service: {service}
+Branch: {branch}, {branchAddress}
+Date: {date}
+Time: {time}
+Reference: {reference}
+
+To book a new time, go to {link}

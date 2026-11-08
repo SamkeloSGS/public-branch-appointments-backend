@@ -1,0 +1,1 @@
+Herinnering: {service} by {branch} op {shortDate} om {time}. Verw {reference}. Bestuur: {link}

@@ -1,0 +1,13 @@
+Subject: Isikhathi sishintshiwe: {service} mhla {shortDate} ngo-{time}
+
+Sawubona {customerName},
+
+Isikhathi sakho osibhukile sishintshiwe. Nansi imininingwane emisha:
+
+Isevisi: {service}
+Igatsha: {branch}, {branchAddress}
+Usuku: {date}
+Isikhathi: {time}
+Inkomba: {reference}
+
+Ukuze usishintshe noma usikhansele, vakashela {link}

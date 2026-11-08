@@ -1,0 +1,84 @@
+# Builds and tests the backend, then pushes its image to Docker Hub.
+#   Pull requests:     build and test only, nothing pushed
+#   Push to main:      <user>/branch-appointments-backend:latest and :sha-<short sha>
+#   Tag v1.2.3:        :1.2.3, :1.2 and :sha-<short sha>
+# Repository settings: variable DOCKERHUB_USERNAME, secret DOCKERHUB_TOKEN (a Docker Hub access token with read and
+# write access, not the account password).
+name: Backend image
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # The fallback keeps the name valid where the variable is not visible (pull requests from forks), which never push
+  IMAGE: ${{ vars.DOCKERHUB_USERNAME || 'unset' }}/branch-appointments-backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Unit, module and API tests; Testcontainers uses the runner's Docker for PostgreSQL and Redis. The image is
+      # built from source below (the Dockerfile does not run tests), only once these pass.
+      - name: Build and test
+        run: mvn --batch-mode --no-transfer-progress verify
+
+      - name: Keep test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+
+      - name: Sign in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

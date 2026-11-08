@@ -1,0 +1,1 @@
+Cancelled: {service} at {branch} on {shortDate} at {time}. Ref {reference}. Book again: {link}

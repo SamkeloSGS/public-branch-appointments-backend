@@ -1,0 +1,13 @@
+Subject: Afspraak gekanselleer: {service} op {shortDate}
+
+Hallo {customerName},
+
+Jou afspraak is gekanselleer.
+
+Diens: {service}
+Tak: {branch}, {branchAddress}
+Datum: {date}
+Tyd: {time}
+Verwysing: {reference}
+
+Om 'n nuwe tyd te bespreek, gaan na {link}

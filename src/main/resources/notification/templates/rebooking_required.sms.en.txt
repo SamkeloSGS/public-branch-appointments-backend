@@ -1,0 +1,1 @@
+Sorry, {branch} can't see you {shortDate} at {time}. Please pick a new time: {link} Ref {reference}

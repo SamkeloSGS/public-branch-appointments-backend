@@ -1,0 +1,1 @@
+Geskuif: {service} by {branch} is nou {shortDate} om {time}. Verw {reference}. Bestuur: {link}

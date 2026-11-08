@@ -1,0 +1,13 @@
+Subject: Appointment moved: {service} on {shortDate} at {time}
+
+Hello {customerName},
+
+Your appointment has a new time.
+
+Service: {service}
+Branch: {branch}, {branchAddress}
+Date: {date}
+Time: {time}
+Reference: {reference}
+
+To change or cancel it, go to {link}

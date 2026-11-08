@@ -1,0 +1,13 @@
+Subject: Isikhumbuzo: {service} mhla {shortDate} ngo-{time}
+
+Sawubona {customerName},
+
+Lesi yisikhumbuzo sesikhathi sakho osibhukile.
+
+Isevisi: {service}
+Igatsha: {branch}, {branchAddress}
+Usuku: {date}
+Isikhathi: {time}
+Inkomba: {reference}
+
+Ukuze usishintshe noma usikhansele, vakashela {link}
